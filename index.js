@@ -1,10 +1,19 @@
+'use strict';
 const udp = require('dgram');
 
 /**
  * [NTPClient description]
  * @docs https://tools.ietf.org/html/rfc2030
  */
-function NTP(options){
+function NTP(options, callback){
+  if(!(this instanceof NTP))
+    return new NTP(options);
+  
+  if(typeof options == 'function'){
+    callback = options;
+    options = undefined;
+  }
+    
   var defaults = {
     server: 'pool.ntp.org',
     port  : 123
@@ -13,7 +22,18 @@ function NTP(options){
     defaults[ k ] = options[ k ];
   this.options = defaults;
   this.socket = new udp.createSocket('udp4');
+  if(typeof callback === 'function')
+    this.time(callback);
   return this;
+};
+
+/**
+ * [time description]
+ * @param  {Function} callback [description]
+ * @return {[type]}            [description]
+ */
+NTP.time = function(options, callback){
+  return new NTP(options, callback);
 };
 
 /**
@@ -64,17 +84,18 @@ NTP.prototype.parse = function(callback, msg){
   var date = new Date(0);
   date.setUTCSeconds(epoch);
   callback && callback(null, date, secsSince1900);
+  return this;
 };
 
 NTP.Client = NTP;
 NTP.Server = require('./server');
 
-NTP.time = function(callback){
-  return new NTP().time(callback);
-};
-
-NTP.createServer = function(){
-  return new NTP.Server();
+/**
+ * [createServer description]
+ * @return {[type]} [description]
+ */
+NTP.createServer = function(options){
+  return new NTP.Server(options);
 };
 
 module.exports = NTP;

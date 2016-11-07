@@ -1,10 +1,5 @@
-const NTP = require('../');
+const ntp = require('../');
 
-
-var ntp = new NTP({
-  // server: 'time.nist.gov'
-});
-
-ntp.time(function(err, time){
+ntp(function(err, time){
   console.log('The network time is :', time);
 });
