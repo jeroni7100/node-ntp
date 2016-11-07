@@ -5,10 +5,13 @@ const udp = require('dgram');
  * @docs https://tools.ietf.org/html/rfc2030
  */
 function NTP(options){
-  this.options = options || {
+  var defaults = {
     server: 'pool.ntp.org',
     port  : 123
   };
+  for(var k in options)
+    defaults[ k ] = options[ k ];
+  this.options = defaults;
   this.socket = new udp.createSocket('udp4');
   return this;
 };
@@ -22,7 +25,7 @@ NTP.prototype.time = function (callback){
   var self = this;
   var packet = this.createPacket();
   this.socket.send(packet, 0, packet.length,
-    this.options.port, this.options.server, function(){
+    this.options.port, this.options.server, function(err, length){
     this.socket.once('message', this.parse.bind(this, callback));
   }.bind(this));
   return this;
@@ -33,11 +36,17 @@ NTP.prototype.time = function (callback){
  * @return {[type]} [description]
  */
 NTP.prototype.createPacket = function(){
+  // NTP time stamp is in the first 48 bytes of the message
   var buffer = new Buffer(48).fill(0x00);
-  // LI, Version, Mode
-  // buffer[0] = 0x1b;
-  buffer[0] = 0b11100011;
-  
+  buffer[0] = 0b11100011; // LI, Version, Mode
+  buffer[1] = 0;          // Stratum, or type of clock
+  buffer[2] = 6;          // Polling Interval
+  buffer[3] = 0xec;       // Peer Clock Precision
+  // 8 bytes of zero for Root Delay & Root Dispersion
+  buffer[12] = 49;
+  buffer[13] = 0x4e;
+  buffer[14] = 49;
+  buffer[15] = 52;
   return buffer;
 };
 
@@ -48,19 +57,13 @@ NTP.prototype.createPacket = function(){
  * @return {[type]}            [description]
  */
 NTP.prototype.parse = function(callback, msg){
-  var offsetTransmitTime = 40, intpart = 0, fractpart = 0;
-
-  for (var i = 0; i <= 3; i++) 
-    intpart = 256 * intpart + msg[offsetTransmitTime + i];
-
-  for (i = 4; i <= 7; i++)
-    fractpart = 256 * fractpart + msg[offsetTransmitTime + i];
-
-  var milliseconds = (intpart * 1000 + (fractpart * 1000) / 0x100000000);
-
-  var date = new Date("Jan 01 1900 GMT");
-  date.setUTCMilliseconds(date.getUTCMilliseconds() + milliseconds);
-  callback && callback(null, date);
+  this.socket.close();
+  const SEVENTY_YEARS = 2208988800;
+  var secsSince1900 = msg.readUIntBE(40, 4);
+  var epoch = secsSince1900 - SEVENTY_YEARS;
+  var date = new Date(0);
+  date.setUTCSeconds(epoch);
+  callback && callback(null, date, secsSince1900);
 };
 
 NTP.Client = NTP;
