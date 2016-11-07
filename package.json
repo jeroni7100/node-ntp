@@ -1,0 +1,12 @@
+{
+  "name": "ntp2",
+  "version": "0.0.1",
+  "description": "simple network time protocol implementation for node.js",
+  "main": "index.js",
+  "repository": {
+    "url": "git@github.com:song940/node-ntp.git",
+    "type": "git"
+  },
+  "author": "Lsong <song940@gmail.com>",
+  "license": "MIT"
+}
