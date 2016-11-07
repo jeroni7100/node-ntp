@@ -3,6 +3,7 @@
 simple network time protocol implementation for node.js
 
 ### Installation
+
 ```bash
 $ npm i ntp2
 ```
@@ -10,8 +11,11 @@ $ npm i ntp2
 ### Example
 
 ```js
-const ntp2 = require('ntp2');
+const ntp = require('ntp2');
 
+ntp.time(function(err, time){
+  console.log('The network time is :', time);
+});
 // 
 ```
 
