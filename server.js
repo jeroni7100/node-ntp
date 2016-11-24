@@ -19,6 +19,7 @@ function NTPServer(options, onRequest){
   this.options = defaults;
   this.socket = udp.createSocket('udp4');
   this.socket.on('message', this.parse.bind(this));
+  if(onRequest) this.on('request', onRequest);
   return this;
 }
 

@@ -8,14 +8,13 @@ const udp = require('dgram');
 function NTP(options, callback){
   if(!(this instanceof NTP))
     return new NTP(options, callback);
-  
+  var defaults = {
+    server: 'pool.ntp.org', port: 123
+  };
   if(typeof options === 'function'){
     callback = options;
     options = {};
   }
-  var defaults = {
-    server: 'pool.ntp.org', port: 123
-  };
   for(var k in options)
     defaults[ k ] = options[ k ];
   this.options = defaults;
