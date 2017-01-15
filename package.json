@@ -1,12 +1,27 @@
 {
   "name": "ntp2",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "simple network time protocol implementation for node.js",
   "main": "index.js",
   "repository": {
-    "url": "git@github.com:song940/node-ntp.git",
+    "url": "git+ssh://git@github.com/song940/node-ntp.git",
     "type": "git"
   },
   "author": "Lsong <song940@gmail.com>",
-  "license": "MIT"
+  "license": "MIT",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "bugs": {
+    "url": "https://github.com/song940/node-ntp/issues"
+  },
+  "homepage": "https://github.com/song940/node-ntp#readme",
+  "directories": {
+    "example": "example"
+  },
+  "keywords": [
+    "ntp",
+    "time",
+    "date"
+  ]
 }

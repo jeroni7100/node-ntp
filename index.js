@@ -39,12 +39,25 @@ NTP.time = function(options, callback){
  * @return {[type]}            [description]
  */
 NTP.prototype.time = function (callback){
-  var self = this;
+  var self = this, respond = false;
   var packet = this.createPacket();
+  var timeout = setTimeout(function(){
+    if(!respond) {
+      respond = true;
+      callback(new Error('ntp network timeout'));
+    }
+  }, this.options.timeout || 1000);
   this.socket.send(packet, 0, packet.length,
-    this.options.port, this.options.server, function(err, length){
-    this.socket.once('message', this.parse.bind(this, callback));
-  }.bind(this));
+    this.options.port, this.options.server, function(err){
+    if(err) return callback(err);
+    self.socket.once('message', function(msg){
+      if(!respond) {
+        respond = true;
+        clearTimeout(timeout);
+        callback(null, self.parse(msg));
+      }
+    });
+  });
   return this;
 };
 
@@ -73,15 +86,14 @@ NTP.prototype.createPacket = function(){
  * @param  {[type]}   msg      [description]
  * @return {[type]}            [description]
  */
-NTP.prototype.parse = function(callback, msg){
+NTP.prototype.parse = function(msg){
   this.socket.close();
   const SEVENTY_YEARS = 2208988800;
   var secsSince1900 = msg.readUIntBE(40, 4);
   var epoch = secsSince1900 - SEVENTY_YEARS;
   var date = new Date(0);
   date.setUTCSeconds(epoch);
-  callback && callback(null, date, secsSince1900);
-  return this;
+  return date;
 };
 
 NTP.Client = NTP;
